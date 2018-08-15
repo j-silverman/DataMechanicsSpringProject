@@ -1,4 +1,4 @@
-# Exploring Environmental Friendliness of Neighborhoods in Boston
+# Exploring Environmental Friendliness of Neighborhoods and Crime in Boston
 
 ### Narrative
 The idea of this project is to gather and transform data that would allow us to analyze how environmentally friendly the neighborhoods of Boston are.  Climate change is a serious concern and the U.S. is reponsible for 16% of all global carbon dioxide emissions, second only to China.  Documents released by The New York Times mention an increase in extreme precipitation events in the Northeast, and hold humans responsible for all observed warming since the mid 20th century.  We hope to try and figure out the extent to which neighborhoods in Boston are trying to reduce their carbon footprint, and uncover any correlation between this extent and the socioeconomic status of a neighborhood.

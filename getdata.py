@@ -1,6 +1,6 @@
 # ####################################### Gonna get us some DATA #######################################################
 
-import urllib.request
+import urllib
 import json
 import dml
 import prov.model
@@ -8,7 +8,8 @@ import datetime
 import uuid
 import geojson
 import csv
-
+import helper
+import urllib.request
 
 def fetch_json(url, item):
     print("Downloading " + str(item) + " Dataset from: " + str(url))
@@ -42,35 +43,48 @@ class getdata(dml.Algorithm):
         startTime = datetime.datetime.now()
 
         # Set up the database connection.
-        client = dml.pymongo.MongoClient()
-        repo = client.repo
-        repo.authenticate('jhs2018_rpm1995', 'jhs2018_rpm1995')
+        repo = helper.get_repo()
 
         # This fetches a dataset with details about Hubway stations in Boston
         r = fetch_geojson('http://bostonopendata-boston.opendata.arcgis.com/datasets'
                           '/ee7474e2a0aa45cbbdfe0b747a5eb032_0.geojson', "Hubway Stations")
-        repo.dropCollection("hubway")
-        repo.createCollection("hubway")
-        repo['jhs2018_rpm1995.hubway'].insert_many(r)
+        try:
+            repo.dropCollection("hubway")
+        except Exception as e:
+            print (f"Errorr {e}")
+            pass
+        #repo.createCollection("hubway")
+        repo["hubway"]
+        repo['hubway'].insert_many(r)
 
         if trial is False:
             # This fetches a dataset with details about Trees in Boston
             r = fetch_geojson('http://datamechanics.io/data/Trees%20(1).geojson', "Trees")
-            repo.dropCollection("trees")
+            try:
+                repo.dropCollection("trees")
+            except:
+                pass
             repo.createCollection("trees")
             repo['jhs2018_rpm1995.trees'].insert_many(r)
 
         # This fetches a dataset with details about Charging Stations in Boston
         r = fetch_json('https://boston.opendatasoft.com/explore/dataset/charging-stations/download/?format=json'
                        '&timezone=America/New_York', "Charging Stations")
-        repo.dropCollection("charge")
+        
+        try:
+            repo.dropCollection("charge")
+        except:
+            pass        
         repo.createCollection("charge")
         repo['jhs2018_rpm1995.charge'].insert_many(r)
 
         # This fetches a dataset with details about Open Spaces in Boston
         r = fetch_geojson('http://bostonopendata-boston.opendata.arcgis.com/datasets/2868d370c55d4d458d4ae2224ef8cddd_7'
                           '.geojson', "Open Spaces")
-        repo.dropCollection("openspaces")
+        try:
+            repo.dropCollection("openspaces")
+        except:
+            pass      
         repo.createCollection("openspaces")
         repo['jhs2018_rpm1995.openspaces'].insert_many(r)
 
@@ -79,12 +93,15 @@ class getdata(dml.Algorithm):
         # /106ab2544b3d4038ad110b531777931e_0.geojson', "Budget Facilities")
         url = 'http://datamechanics.io/data/Budget_Facilities_FY2017.csv'
         print("Downloading Budget Facilities Dataset from datamechanics.io")
-        response = urllib.request.urlopen(url).read().decode("utf-8")
+        response = urllib.urlopen(url).read().decode("utf-8")
         reader = csv.DictReader(response.splitlines())          # This actually works
         container = []
         for row in reader:
             container.append(row)
-        repo.dropCollection("budget")
+        try:
+            repo.dropCollection("budget")
+        except:
+            pass   
         repo.createCollection("budget")
         repo['jhs2018_rpm1995.budget'].insert_many(container)
 
@@ -93,12 +110,15 @@ class getdata(dml.Algorithm):
 
         print("Downloading Crime Dataset from datamechanics.io")
         url = 'http://datamechanics.io/data/crime.csv'
-        response = urllib.request.urlopen(url).read().decode('windows-1252')
+        response = urllib.urlopen(url).read().decode('windows-1252')
         reader = csv.DictReader(response.splitlines())
         container = []
         for row in reader:
             container.append(row)
-        repo.dropCollection("crime")
+        try:
+            repo.dropCollection("crime")
+        except:
+            pass   
         repo.createCollection("crime")
         repo['jhs2018_rpm1995.crime'].insert_many(container)
 
@@ -115,9 +135,8 @@ class getdata(dml.Algorithm):
         # in this script. Each run of the script will generate a new
         # document describing that invocation event.
 
-        client = dml.pymongo.MongoClient()
-        repo = client.repo
-        repo.authenticate('jhs2018_rpm1995', 'jhs2018_rpm1995')
+        repo = helper.get_repo()
+
         doc.add_namespace('alg', 'http://datamechanics.io/algorithm/')  # The scripts are in <folder>#<filename> format.
         doc.add_namespace('dat', 'http://datamechanics.io/data/')  # The data sets are in <user>#<collection> format.
         doc.add_namespace('ont', 'http://datamechanics.io/ontology#')  # 'Extension', 'DataResource', 'DataSet',
@@ -221,9 +240,9 @@ class getdata(dml.Algorithm):
         return doc
 
 
-# getdata.execute()
-# doc = getdata.provenance()
-# print(doc.get_provn())
-# print(json.dumps(json.loads(doc.serialize()), indent=4))
+getdata.execute()
+doc = getdata.provenance()
+print(doc.get_provn())
+print(json.dumps(json.loads(doc.serialize()), indent=4))
 
 # eof
